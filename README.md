@@ -1,12 +1,17 @@
 # Spam Email Classifier: Finding whether an email is spam or not
 
+## Live demo
+
+**[Try the Spam Email Classifier](https://spam-email-classifier-a9by.onrender.com/)**
+
+Please note that as this is deployed on Render Free Tier loading the site might take around 60 seconds. Thank you for your patience
+
+Paste any email to see the verdict and every word that pushed it toward spam or a real email.
+
 ## Live notebook
 
 **[Spam_Email_Classifier.ipynb](Spam_Email_Classifier.ipynb)**
 
-**[Open the Spam Email Classifier notebook](LINK_COMING_SOON)**
-
-<!-- TODO: replace LINK_COMING_SOON with the live notebook URL -->
 
 The full analysis (EDA, preprocessing, baseline, vectorizer comparison, GridSearchCV tuning,
 chi2 vocabulary pruning, feature importance, explainability and adversarial testing) lives in
@@ -14,6 +19,7 @@ the notebook linked above.
 
 ## Table of contents
 
+- [Live demo](#live-demo)
 - [Live notebook](#live-notebook)
 - [Overview](#overview)
 - [Which preprocessing and hyperparameter choices generalized best, and why](#which-preprocessing-and-hyperparameter-choices-generalized-best-and-why)

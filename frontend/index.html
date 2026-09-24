@@ -7,79 +7,122 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✉️</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="masthead">
+    <a class="gh-link" href="https://github.com/Ridzzz0Alam/Spam-Email-Classifier"
+      target="_blank" rel="noopener noreferrer" aria-label="View the source code on GitHub">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      <span class="gh-text">GitHub</span>
+    </a>
+    <p class="eyebrow">
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>
+      Naive Bayes email filter
+    </p>
     <h1>Spam or not</h1>
-    <p class="lede">Paste an email and the filter will classify it, then show you every word
-      it weighed and which way each one pulled.</p>
-    <p class="model-line" id="model-line">Loading model details…</p>
+    <p class="lede">Paste an email to classify it and see every word that pushed the verdict,
+      and which way.</p>
+    <div class="stats" id="stats">
+      <p class="stats-note">Loading model details…</p>
+    </div>
   </header>
 
   <main class="bench">
-    <section class="compose" aria-labelledby="compose-h">
-      <h2 id="compose-h">Email</h2>
+    <section class="compose panel" aria-labelledby="compose-h">
+      <div class="panel-head">
+        <h2 id="compose-h">Email</h2>
+        <span class="count" id="count" aria-live="off">0 words</span>
+      </div>
       <label for="email" class="visually-hidden">Email text</label>
       <textarea id="email" spellcheck="false"
         placeholder="Paste the subject and body of an email here"></textarea>
 
+      <div class="actions">
+        <button type="button" id="classify" class="primary">
+          <span class="spinner" aria-hidden="true"></span>
+          <span id="classify-label">Classify email</span>
+        </button>
+        <button type="button" id="clear" class="ghost">Clear</button>
+        <span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+      </div>
+
       <div class="samples">
-        <span class="samples-label" id="samples-label">Or try a sample:</span>
+        <span class="samples-label" id="samples-label">Or try a sample</span>
         <div class="sample-row" role="group" aria-labelledby="samples-label">
-          <button type="button" class="chip" data-sample="stock">Stock tip</button>
-          <button type="button" class="chip" data-sample="pharmacy">Pharmacy offer</button>
-          <button type="button" class="chip" data-sample="colleague">Colleague</button>
-          <button type="button" class="chip" data-sample="obfuscated">Disguised spam</button>
+          <button type="button" class="chip" data-sample="stock"><span class="dot s" aria-hidden="true"></span>Stock tip</button>
+          <button type="button" class="chip" data-sample="pharmacy"><span class="dot s" aria-hidden="true"></span>Pharmacy offer</button>
+          <button type="button" class="chip" data-sample="colleague"><span class="dot h" aria-hidden="true"></span>Colleague</button>
+          <button type="button" class="chip" data-sample="obfuscated"><span class="dot s" aria-hidden="true"></span>Disguised spam</button>
         </div>
       </div>
 
-      <div class="actions">
-        <button type="button" id="classify" class="primary">Classify email</button>
-        <span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
-      </div>
     </section>
 
     <section class="reading" aria-live="polite" aria-labelledby="reading-h">
       <h2 id="reading-h" class="visually-hidden">Result</h2>
 
       <div id="empty" class="empty">
-        <p>Your result appears here. Every word the model recognises will be shaded by how
-          strongly it pushed the verdict: red toward spam, blue toward a real email.</p>
+        <svg class="empty-art" viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="10" width="38" height="28" rx="4"/><path d="m7 13 17 13 17-13"/></svg>
+        <p class="empty-title">Your result appears here</p>
+        <p>Every word the model recognises will be shaded by how strongly it pushed the
+          verdict.</p>
+        <ul class="legend">
+          <li><span class="swatch s" aria-hidden="true"></span>toward spam</li>
+          <li><span class="swatch h" aria-hidden="true"></span>toward a real email</li>
+        </ul>
       </div>
 
       <div id="error" class="error" hidden></div>
 
       <div id="result" hidden>
-        <div class="verdict">
-          <p class="verdict-word" id="verdict-word"></p>
-          <p class="verdict-prob" id="verdict-prob"></p>
+        <div class="verdict" id="verdict">
+          <span class="verdict-icon" aria-hidden="true">
+            <svg class="i-spam" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v4.5M12 17.2v.1"/></svg>
+            <svg class="i-ham" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+          </span>
+          <div class="verdict-text">
+            <p class="verdict-kicker">Verdict</p>
+            <p class="verdict-word" id="verdict-word"></p>
+          </div>
+          <div class="verdict-num">
+            <p class="verdict-prob" id="verdict-prob"></p>
+            <p class="verdict-caption">chance of spam</p>
+          </div>
         </div>
 
         <figure class="balance" aria-describedby="equation">
           <div class="track">
-            <span class="side side-ham">real email</span>
             <span class="boundary" aria-hidden="true"></span>
             <span class="marker" id="marker" aria-hidden="true"></span>
-            <span class="side side-spam">spam</span>
+          </div>
+          <div class="track-labels" aria-hidden="true">
+            <span>real email</span><span>undecided</span><span>spam</span>
           </div>
           <figcaption id="equation" class="equation"></figcaption>
         </figure>
 
         <article class="sheet">
+          <div class="sheet-head">
+            <h3>Annotated email</h3>
+            <ul class="legend">
+              <li><span class="swatch s" aria-hidden="true"></span>spam</li>
+              <li><span class="swatch h" aria-hidden="true"></span>real</li>
+            </ul>
+          </div>
           <div class="sheet-body" id="annotated" tabindex="0" role="region"
             aria-label="Annotated email. Use the arrow keys to step through shaded words."></div>
           <p class="sheet-note" id="coverage"></p>
         </article>
 
         <div class="drivers">
-          <div>
-            <h3>Pulled toward spam</h3>
+          <div class="panel">
+            <h3><span class="swatch s" aria-hidden="true"></span>Pulled toward spam</h3>
             <ol id="top-spam" class="driver-list spam"></ol>
           </div>
-          <div>
-            <h3>Pulled toward a real email</h3>
+          <div class="panel">
+            <h3><span class="swatch h" aria-hidden="true"></span>Pulled toward a real email</h3>
             <ol id="top-ham" class="driver-list ham"></ol>
           </div>
         </div>

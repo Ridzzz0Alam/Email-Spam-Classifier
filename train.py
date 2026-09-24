@@ -1,12 +1,3 @@
-"""Train the tuned spam classifier from the notebook and export it for the API.
-
-Reproduces the notebook exactly: same deduplication, same cleaning, same stratified
-80/20 split (seed 42), same GridSearchCV winner — TF-IDF, unigrams + bigrams,
-MultinomialNB(alpha=0.1).
-
-    python train.py --data combined_data.csv              # exact notebook model (~85 MB)
-    python train.py --data combined_data.csv --min-df 2   # ~29 MB, 9 more false positives
-"""
 import argparse
 import datetime as dt
 import json

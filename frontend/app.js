@@ -43,9 +43,10 @@ Cl1ck h3re to v1sit 0ur w3bsite.`,
 
 const $ = (id) => document.getElementById(id);
 const els = {
-  email: $("email"), classify: $("classify"), modelLine: $("model-line"),
+  email: $("email"), classify: $("classify"), classifyLabel: $("classify-label"),
+  clear: $("clear"), count: $("count"), stats: $("stats"),
   empty: $("empty"), error: $("error"), result: $("result"),
-  verdictWord: $("verdict-word"), verdictProb: $("verdict-prob"),
+  verdict: $("verdict"), verdictWord: $("verdict-word"), verdictProb: $("verdict-prob"),
   marker: $("marker"), equation: $("equation"), annotated: $("annotated"),
   coverage: $("coverage"), topSpam: $("top-spam"), topHam: $("top-ham"), tip: $("tip"),
 };
@@ -55,9 +56,13 @@ const fmtSigned = (x, d = 2) => (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d);
 const fmtInt = (n) => n.toLocaleString("en-US");
 
 function fmtProb(p) {
-  if (p > 0.9999) return "above 99.99%";
-  if (p < 0.0001) return "below 0.01%";
+  if (p > 0.9999) return ">99.99%";
+  if (p < 0.0001) return "<0.01%";
   return (p * 100).toFixed(2) + "%";
+}
+
+function fmtCompact(n) {
+  return n >= 1e6 ? (n / 1e6).toFixed(2) + "M" : fmtInt(n);
 }
 
 // ---------- model details --------------------------------------------------------------
@@ -66,14 +71,23 @@ async function loadModelInfo() {
     const r = await fetch("/api/model");
     if (!r.ok) throw new Error(r.status);
     const m = await r.json();
-    const acc = (m.metrics.accuracy * 100).toFixed(1);
-    const prec = (m.metrics.precision_spam * 100).toFixed(2);
-    els.modelLine.textContent =
-      `Trained on ${fmtInt(m.n_train)} emails with ${fmtInt(m.n_features)} word and ` +
-      `phrase features. On ${fmtInt(m.metrics.n_test)} held-out emails: ${acc}% accurate, ` +
-      `and ${prec}% of emails it flags as spam really are spam.`;
+    const stats = [
+      [(m.metrics.accuracy * 100).toFixed(1) + "%", "accuracy"],
+      [(m.metrics.precision_spam * 100).toFixed(2) + "%", "spam precision"],
+      [fmtInt(m.n_train), "training emails"],
+      [fmtCompact(m.n_features), "features"],
+    ];
+    els.stats.replaceChildren(...stats.map(([value, label]) => {
+      const tile = Object.assign(document.createElement("div"), { className: "stat" });
+      tile.append(
+        Object.assign(document.createElement("span"), { className: "stat-value", textContent: value }),
+        Object.assign(document.createElement("span"), { className: "stat-label", textContent: label }),
+      );
+      return tile;
+    }));
   } catch {
-    els.modelLine.textContent = "Model details unavailable. The API is not responding.";
+    els.stats.querySelector(".stats-note").textContent =
+      "Model details unavailable. The API is not responding.";
   }
 }
 
@@ -86,7 +100,8 @@ async function classify() {
     return;
   }
   els.classify.disabled = true;
-  els.classify.textContent = "Classifying…";
+  els.classify.classList.add("is-loading");
+  els.classifyLabel.textContent = "Classifying…";
   try {
     const r = await fetch("/api/classify", {
       method: "POST",
@@ -108,7 +123,8 @@ async function classify() {
       : `The email couldn't be classified: ${err.message}`);
   } finally {
     els.classify.disabled = false;
-    els.classify.textContent = "Classify email";
+    els.classify.classList.remove("is-loading");
+    els.classifyLabel.textContent = "Classify email";
   }
 }
 
@@ -127,8 +143,8 @@ function render(text, res) {
 
   const spam = res.label === "spam";
   els.verdictWord.textContent = spam ? "Spam" : "Not spam";
-  els.verdictWord.className = "verdict-word " + (spam ? "is-spam" : "is-ham");
-  els.verdictProb.textContent = `Probability of spam: ${fmtProb(res.p_spam)}`;
+  els.verdict.className = "verdict " + (spam ? "is-spam" : "is-ham");
+  els.verdictProb.textContent = fmtProb(res.p_spam);
 
   // Symmetric log compression keeps +48 and +0.5 both readable on one track.
   const x = res.log_odds;
@@ -158,8 +174,10 @@ function render(text, res) {
       `stay unshaded. Shading is relative to the strongest word in this email; hover or tap ` +
       `a word, or use the arrow keys, for its exact contribution.`;
 
-  fillList(els.topSpam, res.top_spam, "No words pushed toward spam.");
-  fillList(els.topHam, res.top_ham, "No words pushed toward a real email.");
+  // Bars share one scale so the two lists can be compared side by side.
+  const barMax = Math.max(1e-9, ...[...res.top_spam, ...res.top_ham].map((it) => Math.abs(it.contribution)));
+  fillList(els.topSpam, res.top_spam, "No words pushed toward spam.", barMax);
+  fillList(els.topHam, res.top_ham, "No words pushed toward a real email.", barMax);
 
   // On narrow screens the result sits below the textarea, off-screen.
   if (window.matchMedia("(max-width: 860px)").matches) {
@@ -203,7 +221,7 @@ function annotate(text, scores) {
   box.append(frag);
 }
 
-function fillList(ol, items, emptyMsg) {
+function fillList(ol, items, emptyMsg, barMax) {
   ol.replaceChildren();
   if (!items.length) {
     ol.append(Object.assign(document.createElement("li"), { className: "none", textContent: emptyMsg }));
@@ -211,6 +229,7 @@ function fillList(ol, items, emptyMsg) {
   }
   for (const it of items) {
     const li = document.createElement("li");
+    li.style.setProperty("--bar", (Math.abs(it.contribution) / barMax).toFixed(3));
     li.append(
       Object.assign(document.createElement("span"), { className: "feat", textContent: it.feature }),
       Object.assign(document.createElement("span"), { className: "val", textContent: fmtSigned(it.contribution, 3) }),
@@ -289,9 +308,24 @@ els.classify.addEventListener("click", classify);
 els.email.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); classify(); }
 });
+function updateCount() {
+  const n = els.email.value.trim() ? els.email.value.trim().split(/\s+/).length : 0;
+  els.count.textContent = `${fmtInt(n)} word${n === 1 ? "" : "s"}`;
+}
+els.email.addEventListener("input", updateCount);
+els.clear.addEventListener("click", () => {
+  els.email.value = "";
+  updateCount();
+  hideTip();
+  els.result.hidden = true;
+  els.error.hidden = true;
+  els.empty.hidden = false;
+  els.email.focus();
+});
 document.querySelectorAll("[data-sample]").forEach((b) =>
   b.addEventListener("click", () => {
     els.email.value = SAMPLES[b.dataset.sample];
+    updateCount();
     classify();
   }));
 
