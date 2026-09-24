@@ -1,0 +1,8 @@
+# Only the app code goes into the image; data and the model are mounted at run time.
+*
+!requirements.txt
+!spamfilter/
+!app/
+!frontend/
+!train.py
+**/__pycache__

@@ -1,0 +1,71 @@
+"""Exact additive decomposition of a Multinomial Naive Bayes prediction.
+
+log P(spam|d) - log P(ham|d) = [log P(spam) - log P(ham)]
+                             + sum_w x_w * [log P(w|spam) - log P(w|ham)]
+
+Every feature's contribution is one number and they sum exactly to the decision.
+"""
+from collections import defaultdict
+
+import numpy as np
+from sklearn.pipeline import Pipeline
+
+from .preprocessing import clean_email
+
+
+def explain(pipeline: Pipeline, raw_text: str, top_n: int = 10,
+            feature_names: np.ndarray | None = None) -> dict:
+    """Classify one email and decompose the decision into per-feature contributions.
+
+    Pass a precomputed ``feature_names`` array when calling repeatedly: building it from
+    a multi-million-term vocabulary takes seconds, and it never changes.
+    """
+    vec = pipeline.named_steps["vectorizer"]
+    nb = pipeline.named_steps["classifier"]
+
+    cleaned = clean_email(raw_text)
+    x = vec.transform([cleaned])
+    idx, vals = x.indices, x.data
+
+    log_ratio = nb.feature_log_prob_[1] - nb.feature_log_prob_[0]
+    contrib = vals * log_ratio[idx]
+    prior = float(nb.class_log_prior_[1] - nb.class_log_prior_[0])
+    log_odds = prior + float(contrib.sum())
+
+    # Guard: the decomposition must reproduce sklearn's own answer.
+    lp = nb.predict_log_proba(x)[0]
+    assert np.isclose(log_odds, lp[1] - lp[0], atol=1e-6), "decomposition mismatch"
+
+    if feature_names is None:
+        feature_names = vec.get_feature_names_out()
+    names = feature_names[idx] if len(idx) else np.array([], dtype=str)
+    feats = sorted(
+        ({"feature": str(n), "weight": float(v), "contribution": float(c)}
+         for n, v, c in zip(names, vals, contrib)),
+        key=lambda f: f["contribution"],
+    )
+
+    # Per-word score for highlighting: unigrams count fully, a bigram's contribution
+    # is split evenly between its two words.
+    word_scores: dict[str, float] = defaultdict(float)
+    for f in feats:
+        parts = f["feature"].split(" ")
+        for p in parts:
+            word_scores[p] += f["contribution"] / len(parts)
+
+    words = cleaned.split()
+    vocab = vec.vocabulary_
+
+    return {
+        "label": "spam" if log_odds > 0 else "ham",
+        "p_spam": float(np.exp(lp[1])),
+        "log_odds": log_odds,
+        "prior_log_odds": prior,
+        "evidence": log_odds - prior,
+        "top_spam": [f for f in reversed(feats) if f["contribution"] > 0][:top_n],
+        "top_ham": [f for f in feats if f["contribution"] < 0][:top_n],
+        "word_scores": {w: round(s, 5) for w, s in word_scores.items()},
+        "words_total": len(words),
+        "words_recognised": sum(w in vocab for w in words),
+        "features_active": int(len(idx)),
+    }

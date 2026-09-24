@@ -1,0 +1,18 @@
+# docker compose run --rm train   -> trains and writes models/spam_model.joblib
+# docker compose up -d web        -> serves the app at http://127.0.0.1:8000
+services:
+  train:
+    build: .
+    profiles: ["train"]
+    command: ["python", "train.py", "--data", "/data/combined_data.csv", "--out", "models/spam_model.joblib"]
+    volumes:
+      - ./combined_data.csv:/data/combined_data.csv:ro
+      - ./models:/srv/models
+
+  web:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"   # localhost only: the API has no auth or rate limiting
+    volumes:
+      - ./models:/srv/models:ro
+    restart: unless-stopped

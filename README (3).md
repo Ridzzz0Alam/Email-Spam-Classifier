@@ -1,0 +1,5 @@
+models/*.joblib
+__pycache__/
+.pytest_cache/
+.venv/
+*.csv
