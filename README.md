@@ -1,6 +1,8 @@
-# Spam Eamil Classifier: Finding wheter an email is a Spam or Not
+# Spam Email Classifier: Finding whether an email is spam or not
 
 ## Live notebook
+
+**[Spam_Email_Classifier.ipynb](Spam_Email_Classifier.ipynb)**
 
 **[Open the Spam Email Classifier notebook](LINK_COMING_SOON)**
 
@@ -8,7 +10,7 @@
 
 The full analysis (EDA, preprocessing, baseline, vectorizer comparison, GridSearchCV tuning,
 chi2 vocabulary pruning, feature importance, explainability and adversarial testing) lives in
-[Spam_Email_Classifier.ipynb](Spam_Email_Classifier.ipynb).
+the notebook linked above.
 
 ## Table of contents
 
@@ -175,8 +177,8 @@ Feature selection pays off when features outnumber the evidence, which is not th
   and place it in the project root. It is about 140 MB and is ignored by git.
 
 ```bash
-git clone <this-repo-url>
-cd spam_email_classifier
+git clone https://github.com/Ridzzz0Alam/Spam-Email-Classifier.git
+cd Spam-Email-Classifier
 # then copy combined_data.csv into this folder
 ```
 
