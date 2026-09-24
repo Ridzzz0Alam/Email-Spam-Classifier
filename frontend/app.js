@@ -73,7 +73,7 @@ async function loadModelInfo() {
       `phrase features. On ${fmtInt(m.metrics.n_test)} held-out emails: ${acc}% accurate, ` +
       `and ${prec}% of emails it flags as spam really are spam.`;
   } catch {
-    els.modelLine.textContent = "Model details unavailable — the API is not responding.";
+    els.modelLine.textContent = "Model details unavailable. The API is not responding.";
   }
 }
 

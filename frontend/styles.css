@@ -213,7 +213,7 @@ kbd {
 }
 .equation strong { color: var(--ink); font-weight: 600; }
 
-/* the annotated email — the centrepiece */
+/* the annotated email: the centrepiece */
 .sheet {
   background: var(--sheet);
   border: 1px solid var(--rule);
