@@ -8,7 +8,7 @@ Please note that as this is deployed on Render Free Tier loading the site might 
 
 Paste any email to see the verdict and every word that pushed it toward spam or a real email.
 
-## Live notebook
+## Notebook where the Model was trained on
 
 **[Spam_Email_Classifier.ipynb](Spam_Email_Classifier.ipynb)**
 
