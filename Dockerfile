@@ -11,6 +11,8 @@ COPY spamfilter spamfilter
 COPY app app
 COPY frontend frontend
 COPY train.py .
+COPY models models
 
 EXPOSE 8000
-CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
+# Render (and similar hosts) pass the port in $PORT; fall back to 8000 locally.
+CMD ["sh", "-c", "fastapi run app/main.py --host 0.0.0.0 --port ${PORT:-8000}"]
