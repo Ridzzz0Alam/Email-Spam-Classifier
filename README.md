@@ -1,4 +1,4 @@
-# Spam or not: web app for the Project 04 classifier
+# Spam Eamil Classifier: Finding wheter an email is a Spam or Not
 
 ## Live notebook
 
