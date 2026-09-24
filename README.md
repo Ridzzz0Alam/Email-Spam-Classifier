@@ -248,11 +248,13 @@ don't need the dataset.
 |---|---|---|---|---|---|
 | `1` (default, exact notebook model) | 3,288,385 | 85 MB | ~6 s | 98.49% | 54 |
 | `2` | 984,467 | 29 MB | ~3 s | 98.58% | 63 |
+| `3` (deployed on Render) | 537,387 | 17 MB | — | 98.44% | 60 |
 
 `--min-df 2` drops phrases seen in only one training email. It is a third of the size and
 scores slightly higher on accuracy, but misfiles 9 more real emails as spam. The default
 keeps the notebook's model because the report argues false positives are the error that
-matters. Pick `2` if you need to deploy somewhere memory is tight.
+matters. Pick `2` or `3` if you need to deploy somewhere memory is tight: served, the `1` model
+uses about 1 GB of RAM, while `3` peaks under 300 MB and fits Render's 512 MB free tier.
 
 ## API
 
